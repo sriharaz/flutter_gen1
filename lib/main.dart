@@ -8,7 +8,42 @@ import 'amplifyconfiguration.dart';
 void main() {
   runApp(const MyApp());
 }
+class AuthenticatedView extends StatelessWidget {
+  const AuthenticatedView({super.key});
 
+  Future<void> signOutCurrentUser() async {
+  try {
+    final result = await Amplify.Auth.signOut();
+    if (result is CognitoCompleteSignOut) {
+      safePrint('Sign out completed successfully');
+    } else if (result is CognitoFailedSignOut) {
+      safePrint('Error signing user out: ${result.exception.message}');
+    }
+  } on AuthException catch (e) {
+    safePrint('Error signing out: ${e.message}');
+  }
+}
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Home'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout),
+            onPressed: () async {
+              await signOutCurrentUser();
+            },
+          ),
+        ],
+      ),
+      body: const Center(
+        child: Text('You are logged in!'),
+      ),
+    );
+  }
+}
 class MyApp extends StatefulWidget {
   const MyApp({super.key});
 
@@ -84,11 +119,7 @@ void _handleCodeDelivery(AuthCodeDeliveryDetails codeDeliveryDetails) {
     return Authenticator(
       child: MaterialApp(
         builder: Authenticator.builder(),
-        home: const Scaffold(
-          body: Center(
-            child: Text('You are logged in!'),
-          ),
-        ),
+        home: const AuthenticatedView(),
       ),
     );
   }
